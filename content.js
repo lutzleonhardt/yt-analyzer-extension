@@ -69,10 +69,13 @@
         const channelEl = el.querySelector('#channel-name a, ytd-channel-name a, .ytd-channel-name a');
         const thumbnailContainer = el.querySelector('ytd-thumbnail, #thumbnail');
 
+        const title = getVideoTitle(el, link, titleEl);
+        const channel = getChannelName(el, channelEl);
+
         videos.push({
           id: videoId,
-          title: titleEl?.textContent?.trim() || '',
-          channel: channelEl?.textContent?.trim() || '',
+          title,
+          channel,
           element: el,
           thumbnailContainer
         });
@@ -80,6 +83,46 @@
     }
 
     return videos;
+  }
+
+  function getVideoTitle(container, link, titleEl) {
+    const candidates = [
+      titleEl?.textContent,
+      link?.getAttribute('title'),
+      link?.getAttribute('aria-label'),
+      container?.querySelector('h3')?.textContent,
+      container?.querySelector('[title]')?.getAttribute('title')
+    ];
+
+    for (const candidate of candidates) {
+      const cleaned = cleanVideoText(candidate);
+      if (cleaned) return cleaned;
+    }
+
+    return '';
+  }
+
+  function getChannelName(container, channelEl) {
+    const candidates = [
+      channelEl?.textContent,
+      container?.querySelector('#channel-info #text')?.textContent,
+      container?.querySelector('ytd-channel-name #text')?.textContent
+    ];
+
+    for (const candidate of candidates) {
+      const cleaned = cleanVideoText(candidate);
+      if (cleaned) return cleaned;
+    }
+
+    return '';
+  }
+
+  function cleanVideoText(text) {
+    if (!text) return '';
+    return text
+      .replace(/\s+/g, ' ')
+      .replace(/\s+·\s+\d+\s+(views?|Aufrufe).*/i, '')
+      .trim();
   }
 
   // ── Badge Injection ───────────────────────────

@@ -186,9 +186,17 @@ async function analyzeSingleVideo(video, settings) {
   // Step 1: Fetch transcript
   let transcript = null;
   let transcriptStatus = 'unavailable';
+  let enrichedVideo = { ...video };
 
   try {
-    transcript = await fetchTranscript(video.id);
+    const transcriptData = await fetchTranscript(video.id);
+    transcript = transcriptData.transcript;
+    enrichedVideo = {
+      ...enrichedVideo,
+      title: enrichedVideo.title || transcriptData.title || '',
+      channel: enrichedVideo.channel || transcriptData.channel || ''
+    };
+
     if (transcript && transcript.trim().length > 0) {
       transcriptStatus = 'available';
     }
@@ -197,8 +205,17 @@ async function analyzeSingleVideo(video, settings) {
     transcriptStatus = 'error';
   }
 
+  if (!enrichedVideo.title || !enrichedVideo.channel) {
+    const fallbackMetadata = await fetchVideoMetadata(video.id);
+    enrichedVideo = {
+      ...enrichedVideo,
+      title: enrichedVideo.title || fallbackMetadata.title || '',
+      channel: enrichedVideo.channel || fallbackMetadata.channel || ''
+    };
+  }
+
   // Step 2: Build prompt
-  const userMessage = buildUserMessage(video, transcript);
+  const userMessage = buildUserMessage(enrichedVideo, transcript);
 
   // Step 3: Call LLM
   const llmResponse = await callLLM(userMessage, settings);
@@ -219,7 +236,7 @@ async function analyzeSingleVideo(video, settings) {
 
   return {
     ...scores,
-    video,
+    video: enrichedVideo,
     transcriptStatus,
     timestamp: Date.now(),
     provider: settings.provider,
@@ -257,6 +274,8 @@ async function fetchTranscript(videoId) {
   } catch (e) {
     throw new Error('Could not parse ytInitialPlayerResponse');
   }
+
+  const videoDetails = playerResponse?.videoDetails || {};
 
   // Navigate to caption tracks
   const captionTracks = playerResponse?.captions
@@ -305,7 +324,28 @@ async function fetchTranscript(videoId) {
     if (text) textParts.push(text);
   }
 
-  return textParts.join(' ');
+  return {
+    transcript: textParts.join(' '),
+    title: videoDetails.title || '',
+    channel: videoDetails.author || ''
+  };
+}
+
+async function fetchVideoMetadata(videoId) {
+  try {
+    const response = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
+    if (!response.ok) {
+      return { title: '', channel: '' };
+    }
+
+    const data = await response.json();
+    return {
+      title: data.title || '',
+      channel: data.author_name || ''
+    };
+  } catch {
+    return { title: '', channel: '' };
+  }
 }
 
 // ── User Message Builder ────────────────────────────
