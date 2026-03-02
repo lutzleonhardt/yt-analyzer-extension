@@ -1,0 +1,147 @@
+/* =============================================
+   YT Analyzer — Content Script Styles
+   Badges and floating button on YouTube pages
+   ============================================= */
+
+/* ── Floating Analyze Button ─────────────────── */
+
+.yta-floating-button {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.yta-fab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: #1a1a1a;
+  color: #f0f0f0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  line-height: 1;
+}
+
+.yta-fab:hover {
+  background: #2a2a2a;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+  transform: translateY(-1px);
+}
+
+.yta-fab:active {
+  transform: translateY(0);
+}
+
+.yta-fab:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.yta-fab-loading .yta-fab-text::after {
+  content: '';
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-left: 6px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: yta-spin 0.6s linear infinite;
+  vertical-align: middle;
+}
+
+.yta-fab-status {
+  padding: 6px 14px;
+  background: rgba(0, 0, 0, 0.85);
+  color: #ccc;
+  border-radius: 8px;
+  font-size: 12px;
+  max-width: 300px;
+  text-align: right;
+  backdrop-filter: blur(8px);
+}
+
+/* ── Score Badges on Thumbnails ──────────────── */
+
+.yta-badge {
+  pointer-events: auto;
+  cursor: pointer;
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+}
+
+.yta-badge:hover {
+  transform: scale(1.08);
+}
+
+.yta-badge-inner {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px 3px 7px;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 0;
+  line-height: 1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(4px);
+}
+
+.yta-badge-score {
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  letter-spacing: -0.5px;
+}
+
+.yta-badge-label {
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.9;
+  letter-spacing: 0.02em;
+}
+
+/* ── Loading Badge ───────────────────────────── */
+
+.yta-badge-inner.yta-loading {
+  background: rgba(60, 60, 60, 0.9) !important;
+  padding: 5px 10px;
+}
+
+.yta-badge-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  animation: yta-spin 0.6s linear infinite;
+}
+
+@keyframes yta-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Dark mode adjustments ───────────────────── */
+/* YouTube's dark mode uses [dark] attribute on html */
+
+html[dark] .yta-fab {
+  background: #2a2a2a;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+html[dark] .yta-fab:hover {
+  background: #3a3a3a;
+}
